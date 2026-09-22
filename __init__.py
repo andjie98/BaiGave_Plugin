@@ -6,7 +6,7 @@ import importlib
 bl_info={
     "name":"BaiGave's Tool",
     "author":"BaiGave",
-    "version":(1, 1, 0),
+    "version":(1, 1, 1),
     "blender":(5, 2, 0),
     "location":"View3d > Tool",
     "warning":"如果有任何问题请联系白给~我的bilbil账号:BaiGave",

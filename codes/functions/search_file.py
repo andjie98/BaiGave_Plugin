@@ -276,7 +276,7 @@ class Read_schems_dir(bpy.types.Operator):
 
         try:
             # 获取路径下的所有文件
-            directories = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f)) and f.endswith('.schem')]
+            directories = [f for f in os.listdir(path) if os.path.isfile(os.path.join(path, f)) and f.lower().endswith(('.schem', '.schematic'))]
         except StopIteration:
             directories = []
 
@@ -285,8 +285,8 @@ class Read_schems_dir(bpy.types.Operator):
             schem_items.append((filename, filename, ''))
 
         bpy.types.Scene.schem_list = bpy.props.EnumProperty(
-            name=".schem文件",
-            description="选择一个.schem文件",
+            name=".schem / .schematic 文件",
+            description="选择 .schem 或 .schematic 文件",
             items=schem_items,
         )
         

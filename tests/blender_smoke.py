@@ -64,5 +64,28 @@ level=b.amulet.load_level(str(world))
 assert 'oak_stairs' in str(level.get_version_block(0,64,0,'minecraft:overworld',('java',(1,20,4)))[0])
 level.close()
 print('WORLD_WRITE_READ_OK')
+# Legacy MCEdit/WorldEdit: numeric IDs plus metadata (red wool = 35:14).
+legacy = b.TAG_Compound({
+    'Width': b.ShortTag(3), 'Height': b.ShortTag(1), 'Length': b.ShortTag(1),
+    'Materials': b.TAG_String('Alpha'),
+    'Blocks': b.ByteArrayTag([1, 20, 35]), 'Data': b.ByteArrayTag([0, 0, 14]),
+    'Entities': b.TAG_List([]), 'TileEntities': b.TAG_List([]),
+})
+p = root / 'schem' / 'legacy.schematic'
+b.save_nbt(legacy, p)
+level = b.amulet.load_level(str(p))
+assert str(level.get_version_block(2, 0, 0, 'main', ('java', (1,20,4)))[0]) == 'minecraft:red_wool'
+level.close()
+assert bpy.ops.baigave.import_schem(filepath=str(p)) == {'FINISHED'}
+obj = bpy.data.objects[p.name]
+assert len(obj.data.vertices) == 3
+assert {tuple(v.co) for v in obj.data.vertices} == {(0,0,0),(1,0,0),(2,0,0)}
+evaluated = obj.evaluated_get(bpy.context.evaluated_depsgraph_get())
+assert len(evaluated.data.polygons) == 18
+assert bpy.data.images['red_wool.png'].has_data
+print('LEGACY_SCHEMATIC_METADATA_GEOMETRY_OK')
+# Multi-select handles both formats through the same operator.
+assert bpy.ops.baigave.import_schem(filepath=str(p), files=[{'name':'integration.schem'}, {'name':p.name}]) == {'FINISHED'}
+print('MIXED_SCHEM_SCHEMATIC_IMPORT_OK')
 m.unregister();m.register();m.unregister()
 print('EXTENDED_ALL_OK')

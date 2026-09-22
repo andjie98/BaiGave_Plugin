@@ -60,4 +60,4 @@ if __name__ == "__main__":
     (ROOT / "dist").mkdir(exist_ok=True)
     if args.prepare:
         prepare()
-    build(args.output or ROOT / "dist/BaiGave_Plugin-1.1.0-blender5.2-windows-x64.zip")
+    build(args.output or ROOT / "dist/BaiGave_Plugin-1.1.1-blender5.2-windows-x64.zip")

@@ -154,88 +154,50 @@ class ImportNBT(bpy.types.Operator):
 
 # 定义一个导入.schem文件的操作类
 class ImportSchem(bpy.types.Operator):
+    """Import Sponge .schem or legacy MCEdit/WorldEdit .schematic blocks."""
     bl_idname = "baigave.import_schem"
-    bl_label = "导入.schem文件"
-    
-    # 定义一个属性来存储文件路径
+    bl_label = "导入 .schem / .schematic"
+
     filepath: bpy.props.StringProperty(subtype="FILE_PATH") # type: ignore
-    # 定义一个属性来过滤文件类型，只显示.schem文件
-    filter_glob: bpy.props.StringProperty(default="*.schem", options={'HIDDEN'}) # type: ignore
-    files: bpy.props.CollectionProperty(type=bpy.types.PropertyGroup) # type: ignore
+    filter_glob: bpy.props.StringProperty(default="*.schem;*.schematic", options={'HIDDEN'}) # type: ignore
+    files: bpy.props.CollectionProperty(type=bpy.types.OperatorFileListElement) # type: ignore
 
-    # 定义操作的执行函数
     def execute(self, context):
-        for f in self.files:
-            # 从文件路径中提取文件名            
-            self.filepath=str(str(os.path.dirname(self.filepath))+"\\"+str(f.name))
-            name=os.path.basename(self.filepath)
-            folder_path = os.path.dirname(os.path.dirname(os.path.realpath(__file__)))+ "/schemcache"
-            file_names = os.listdir(folder_path)
-            for file_name in file_names:
-                file_path = os.path.join(folder_path, file_name)
-                os.remove(file_path)
-            level = amulet.load_level(self.filepath)
-            chunks = [list(point) for point in level.bounds("main").bounds]
-            nbt_data = amulet_nbt.load(self.filepath)
-            
-            #data=nbt_data["BlockEntities"][0]["data"]["data"]
-            # 解析数据为坐标点
-            # coordinates = []
-            # for i in range(0, len(data), 3):
-            #     x = data[i]
-            #     y = data[i + 1]
-            #     z = data[i + 2]
-            #     coordinates.append((x, y, z))
-
-            # # 构建字典
-            # coordinates_dict = {f"Point {index + 1}": point for index, point in enumerate(coordinates)}
-
-            size = {
-                "x":int(nbt_data["Width"]),
-                "y":int(nbt_data["Height"]),
-                "z":int(nbt_data["Length"])
-            }
-            
-            # 设置图片的大小和颜色
-            image_width = int(size["z"])
-            image_height = int(size["x"])
-            default_color = (0.47, 0.75, 0.35, 1.0)  # RGBA颜色，对应#79c05a
-
-            # 创建一个新的图片
-            image = bpy.data.images.new("colormap", width=image_width, height=image_height)
-            image.use_fake_user = True
-
-            image.pixels.foreach_set(default_color * (image_width * image_height))
-            start_time = time.time()
-
-            obj=schem(level,chunks,False,name)
-            if context.scene.separate_vertices_by_blockid ==True:
-                separate_vertices_by_blockid(obj)
-            elif context.scene.separate_vertices_by_chunk ==True:
-                separate_vertices_by_chunk(obj)
-            schem_liquid(level,chunks)
-            level.close()
-
-            end_time = time.time()
-            execution_time = end_time - start_time
-
-            print("程序运行时间为：", execution_time, "秒")
-            materials = bpy.data.materials
-            for material in materials:
-                try:
-                    node_tree = material.node_tree
-                    nodes = node_tree.nodes
-                    for node in nodes:
-                        if node.type == 'TEX_IMAGE':
-                            if node.name == '色图':
-                                node.image = bpy.data.images.get("colormap")
-                except Exception as e:
-                    print("材质出错了:", e)
-
-            
-
+        paths = [os.path.join(os.path.dirname(self.filepath), f.name) for f in self.files]
+        if not paths:
+            paths = [self.filepath]
+        for path in paths:
+            level = None
+            try:
+                level = amulet.load_level(path)
+                minimum, maximum = [tuple(int(v) for v in point) for point in level.bounds("main").bounds]
+                size = tuple(hi - lo for lo, hi in zip(minimum, maximum))
+                if any(length <= 0 for length in size):
+                    raise ValueError("结构尺寸必须大于零")
+                # Amulet bounds are exclusive; the mesh routines take inclusive bounds.
+                chunks = [minimum, tuple(v - 1 for v in maximum)]
+                image = bpy.data.images.new("colormap", width=size[2], height=size[0])
+                image.use_fake_user = True
+                image.pixels.foreach_set((0.47, 0.75, 0.35, 1.0) * (size[2] * size[0]))
+                obj = schem(level, chunks, False, os.path.basename(path))
+                if context.scene.separate_vertices_by_blockid:
+                    separate_vertices_by_blockid(obj)
+                elif context.scene.separate_vertices_by_chunk:
+                    separate_vertices_by_chunk(obj)
+                schem_liquid(level, chunks)
+                for material in bpy.data.materials:
+                    if material.node_tree:
+                        for node in material.node_tree.nodes:
+                            if node.type == 'TEX_IMAGE' and node.name == '色图':
+                                node.image = image
+            except Exception as exc:
+                self.report({'ERROR'}, f"无法导入 {os.path.basename(path)}: {exc}")
+                return {'CANCELLED'}
+            finally:
+                if level is not None:
+                    level.close()
         return {'FINISHED'}
-    
+
     def invoke(self, context, event):
         context.window_manager.fileselect_add(self)
         return {'RUNNING_MODAL'}

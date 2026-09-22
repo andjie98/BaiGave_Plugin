@@ -72,7 +72,7 @@ def schem(level,chunks,cached,filename="schem",position=(0,0,0)):
                     try:
                         id = level.get_block(x, y, z, "main")
                     except:
-                        pass
+                        continue
                     if isinstance(id,amulet.api.block.Block):
                         
                         if id.extra_blocks !=():

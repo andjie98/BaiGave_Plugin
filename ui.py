@@ -99,8 +99,8 @@ class ImportPanel(bpy.types.Panel):
         row.label(text = "导入",icon='ERROR')
         # 创建一个框
         box = layout.box()
-        box.label(text="导入.schem文件")
-        box.operator("baigave.schem_import_panel", text="导入.schem文件")
+        box.label(text="导入 .schem / .schematic")
+        box.operator("baigave.schem_import_panel", text="导入 .schem / .schematic")
         layout.split()
         box = layout.box()
         box.label(text="导入方块")
@@ -595,7 +595,7 @@ class SwitchBlockList(bpy.types.UIList):
             split.row().prop(item, "target_id", text="", emboss=False)
 class SchemImportPanel(bpy.types.Operator):
     bl_idname = "baigave.schem_import_panel"
-    bl_label = "导入Schem文件二级界面"
+    bl_label = "导入结构文件"
 
     def execute(self, context):
         
@@ -609,7 +609,7 @@ class SchemImportPanel(bpy.types.Operator):
         scene = context.scene
         
         row = layout.row(align=True)    
-        row.label(text="导入.schem选项界面",icon="EVENT_S")
+        row.label(text="导入 .schem / .schematic 选项",icon="EVENT_S")
         if context.scene.separate_vertices_by_chunk ==False:
             row = layout.row()    
             row.prop(scene, "separate_vertices_by_blockid",text="是否按照方块状态分离？")
@@ -617,7 +617,7 @@ class SchemImportPanel(bpy.types.Operator):
             row = layout.row()    
             row.prop(scene, "separate_vertices_by_chunk",text="是否按照区块分离？")
         row = layout.row()
-        row.operator("baigave.import_schem", text="导入.schem文件")
+        row.operator("baigave.import_schem", text="导入 .schem / .schematic")
 
 class ColorToBlockPanel(bpy.types.Operator):
     bl_idname = "baigave.color_to_block_panel"

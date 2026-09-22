@@ -5,7 +5,7 @@ This is an experimental compatibility fork, not an upstream release.
 
 ## Installation
 
-Build/download `BaiGave_Plugin-1.1.0-blender5.2-windows-x64.zip` and use
+Build/download `BaiGave_Plugin-1.1.1-blender5.2-windows-x64.zip` and use
 Blender Preferences → Add-ons → Install from Disk, then enable **BaiGave's Tool**.
 The ZIP is intentionally a legacy add-on package, with a `BaiGave_Plugin` root.
 Do not install GitHub's automatic source ZIP: it lacks the private runtime.
@@ -14,6 +14,19 @@ Use the BaiGave sidebar to add your own Minecraft client JAR / mod JARs and
 resource packs. Game JARs are **not** redistributed in the new release ZIP.
 The original workflows and Minecraft version assumptions (mostly 1.20.x)
 remain; this does not add support for newer Minecraft formats.
+
+## Legacy schematic support (1.1.1)
+
+The structure import button accepts both `.schem` and legacy `.schematic` files,
+including mixed multi-selection. Legacy numeric block IDs and metadata are
+translated by Amulet's Java 1.12.2 reader (for example, wool 35:14 becomes red wool).
+The directory picker lists both formats. Bounds are converted from Amulet's
+exclusive maximum to the mesh builder's inclusive maximum, and files are closed
+on failure as well as success. Export remains Sponge `.schem`.
+
+Tested with stone, glass and red wool, including metadata, coordinates, actual
+mesh faces and texture loading. Custom legacy mod numeric-ID mappings and entity
+rendering are not added by this change.
 
 ## Compatibility approach
 
