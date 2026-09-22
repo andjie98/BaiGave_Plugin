@@ -11,8 +11,8 @@ from .schem import schem_chunk,schem_liquid,schem,remove_brackets,separate_verti
 from .functions.mesh_to_mc import create_mesh_from_dictionary,create_or_clear_collection
 from .register import register_blocks
 import json
-import amulet
-import amulet_nbt
+from ..backend import amulet
+from ..backend import amulet_nbt
 import threading
 
 
@@ -176,7 +176,7 @@ class ImportSchem(bpy.types.Operator):
                 os.remove(file_path)
             level = amulet.load_level(self.filepath)
             chunks = [list(point) for point in level.bounds("main").bounds]
-            nbt_data = amulet_nbt._load_nbt.load(self.filepath)
+            nbt_data = amulet_nbt.load(self.filepath)
             
             #data=nbt_data["BlockEntities"][0]["data"]["data"]
             # 解析数据为坐标点
@@ -205,16 +205,7 @@ class ImportSchem(bpy.types.Operator):
             image = bpy.data.images.new("colormap", width=image_width, height=image_height)
             image.use_fake_user = True
 
-            def set_default_color(image, image_width, image_height, default_color):
-                # 设置默认颜色
-                for y in range(image_height):
-                    for x in range(image_width):
-                        pixel_index = (y * image_width + x) * 4  # RGBA每个通道都是4个值
-                        image.pixels[pixel_index : pixel_index + 4] = default_color
-            # 创建一个新的线程来执行 set_default_color 函数
-            thread = threading.Thread(target=set_default_color, args=(image, image_width, image_height, default_color))
-            # 启动新的线程
-            thread.start()
+            image.pixels.foreach_set(default_color * (image_width * image_height))
             start_time = time.time()
 
             obj=schem(level,chunks,False,name)
@@ -223,6 +214,7 @@ class ImportSchem(bpy.types.Operator):
             elif context.scene.separate_vertices_by_chunk ==True:
                 separate_vertices_by_chunk(obj)
             schem_liquid(level,chunks)
+            level.close()
 
             end_time = time.time()
             execution_time = end_time - start_time
@@ -257,7 +249,7 @@ class MultiprocessImport(bpy.types.Operator):
     filter_glob: bpy.props.StringProperty(default="*.schem", options={'HIDDEN'}) # type: ignore
 
     def execute(self, context):
-        VarCachePath = bpy.utils.script_path_user() + "/addons/BaiGave_Plugin/schemcache/var.pkl"
+        VarCachePath = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + "/schemcache/var.pkl"
         with open(VarCachePath, 'rb') as file:
             schempath,chunks,name,x_list,processnum = pickle.load(file)
         level = amulet.load_level(schempath)
@@ -288,7 +280,7 @@ class MultiprocessSchem(bpy.types.Operator):
     filter_glob: bpy.props.StringProperty(default="*.schem", options={'HIDDEN'}) # type: ignore
 
     def execute(self, context):
-        VarCachePath = bpy.utils.script_path_user() + "/addons/BaiGave_Plugin/schemcache/var.pkl"
+        VarCachePath = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + "/schemcache/var.pkl"
         with open(VarCachePath, 'rb') as file:
             schempath,chunks,name,x_list,processnum = pickle.load(file)
         level = amulet.load_level(schempath)
@@ -307,12 +299,12 @@ class ImportSchemLiquid(bpy.types.Operator):
     filter_glob: bpy.props.StringProperty(default="*.schem", options={'HIDDEN'}) # type: ignore
 
     def execute(self, context):
-        VarCachePath = bpy.utils.script_path_user() + "/addons/BaiGave_Plugin/schemcache/var.pkl"
+        VarCachePath = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + "/schemcache/var.pkl"
         with open(VarCachePath, 'rb') as file:
             chunks,mp_chunks,schempath,interval,processnum = pickle.load(file)
         level = amulet.load_level(schempath)
         schem_liquid(level,chunks)
-        ModelCachePath = bpy.utils.script_path_user() + "/addons/BaiGave_Plugin/schemcache/liquid.blend"
+        ModelCachePath = os.path.dirname(os.path.dirname(os.path.realpath(__file__))) + "/schemcache/liquid.blend"
         bpy.ops.wm.save_as_mainfile(filepath=ModelCachePath)
         return {'FINISHED'}
     def invoke(self, context, event):

@@ -88,4 +88,5 @@ def register():
 def unregister():
 	for mod in reversed(module_list):
 		mod.unregister()
-	del bpy.types.Scene.BaiGave
+	from . import backend
+	backend.close()

@@ -1,4 +1,4 @@
-from amulet_nbt import TAG_Compound, TAG_Int, TAG_Byte, TAG_String, TAG_Long, TAG_Double, TAG_Float, TAG_Short, TAG_List
+from ...backend import TAG_Compound, TAG_Int, TAG_Byte, TAG_String, TAG_Long, TAG_Double, TAG_Float, TAG_Short, TAG_List
 
 
 def create_level(World_Name, SpawnX, SpawnY, SpawnZ, hardcore, Difficulty, allowCommands, LastPlayed, DayTime, Seed, GameType, OverworldGenerator_Type,

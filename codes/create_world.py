@@ -1,3 +1,4 @@
+from ..backend import save_nbt
 import bpy
 import time
 import shutil
@@ -130,7 +131,7 @@ class CreateWorld(bpy.types.Operator):
 )
         # 将NBT数据写入文件
         filepath =os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),"saves",World_Name,"level.dat")
-        level_dat.save_to(filepath)
+        save_nbt(level_dat, filepath)
         if HeightLimit == "1":
             source_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),"datapacks", "datapacks.zip")
             destination_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),"saves", World_Name, "datapacks")

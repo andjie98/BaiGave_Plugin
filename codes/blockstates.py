@@ -1,7 +1,7 @@
 import json
 import os
  
-import amulet
+from ..backend import amulet
 from .model import extract_vertices_from_elements
 from .functions.get_data import get_file_path, get_all_data
 

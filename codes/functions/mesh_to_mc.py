@@ -1,3 +1,4 @@
+from ...backend import save_nbt, varint_bytes
 import os
 import bpy
 import bmesh
@@ -6,7 +7,7 @@ import re
 from .tip import ShowMessageBox
 from ..register import register_blocks,create_or_clear_collection
 from collections import defaultdict
-from amulet_nbt import TAG_Compound, TAG_Int, ByteArrayTag ,IntArrayTag,ShortTag
+from ...backend import TAG_Compound, TAG_Int, ByteArrayTag ,IntArrayTag,ShortTag
 
 # 全局缓存来存储计算结果
 distance_cache = {}
@@ -63,12 +64,12 @@ def export_schem(dict,filename="file"):
     schem['Height'] = ShortTag(Height)
     schem['Width'] = ShortTag(Width)
     schem['Length'] = ShortTag(Length)
-    schem['BlockData'] = ByteArrayTag(block_data)
+    schem['BlockData'] = ByteArrayTag(varint_bytes(block_data))
     # 将NBT数据写入.schem文件
-    file_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),"schem",filename+".schem") # 设置你想要保存的文件路径
+    file_path = os.path.join(os.path.dirname(os.path.dirname(os.path.dirname(os.path.realpath(__file__)))),"schem",filename+".schem") # 设置你想要保存的文件路径
     #创建一个新的选中区域
     with open(file_path, "wb") as f:
-        schem.save_to(f)
+        save_nbt(schem, f)
 
 
 def create_mesh_from_dictionary(d,name):

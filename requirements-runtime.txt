@@ -1,0 +1,14 @@
+amulet-core==1.9.47
+amulet-leveldb==1.0.7
+amulet-mutf8==1.0.7
+amulet-nbt==2.1.8
+amulet-rocksdb==1.0.5
+lz4==4.4.5
+numpy==1.26.4
+platformdirs==3.11.0
+plumbum==2.0.2
+portalocker==2.10.1
+PyMCTranslate==1.2.48
+pywin32==312
+rpyc==6.0.2
+typing_extensions==4.16.0

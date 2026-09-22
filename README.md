@@ -1,3 +1,11 @@
+# Blender 5.2 适配分叉（Windows x64）
+
+此分支适配 Blender 5.2.2，保留 Blender 自带 Python 3.13，并使用插件私有的 Python 3.11 环境运行 Amulet 地图读写库。无需降级 Blender。
+
+安装、构建和已验证范围见 [BLENDER_5_2.md](BLENDER_5_2.md)。请使用构建后的安装包；GitHub 自动生成的源码 ZIP 不包含运行环境。这是实验性适配，大型地图及全部模组组合尚未完整验证。
+
+---
+
 
 
 # 白给的插件

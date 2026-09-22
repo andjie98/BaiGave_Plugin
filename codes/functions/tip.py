@@ -1,6 +1,9 @@
 import bpy
 
 def ShowMessageBox(message="", title="信息", icon='INFO', link_text=None, link_operator=None):
+    if bpy.app.background:
+        print(f"{title}: {message}")
+        return
     def draw(self, context):
         layout = self.layout
         layout.label(text=message)

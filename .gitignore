@@ -1,0 +1,9 @@
+__pycache__/
+*.pyc
+runtime/
+vendor/
+dist/
+temp/
+saves/
+schem/
+tests/generated/

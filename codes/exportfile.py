@@ -1,9 +1,10 @@
+from ..backend import save_nbt, varint_bytes
 import os
 import re
 import bpy
-import amulet
-from amulet.api.block import Block
-from amulet_nbt import TAG_Compound, TAG_Int, ByteArrayTag ,IntArrayTag,ShortTag,TAG_String
+from ..backend import amulet
+from ..backend import Block
+from ..backend import TAG_Compound, TAG_Int, ByteArrayTag ,IntArrayTag,ShortTag,TAG_String
 from .functions.tip import ShowMessageBox
 
 
@@ -169,12 +170,12 @@ class ExportSchem(bpy.types.Operator):
         schem['Height'] = ShortTag(Height)
         schem['Width'] = ShortTag(Width)
         schem['Length'] = ShortTag(Length)
-        schem['BlockData'] = ByteArrayTag(block_data)
+        schem['BlockData'] = ByteArrayTag(varint_bytes(block_data))
         # 将NBT数据写入.schem文件
         file_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))),"schem",self.filename+".schem") # 设置你想要保存的文件路径
         #创建一个新的选中区域
         with open(file_path, "wb") as f:
-            schem.save_to(f)
+            save_nbt(schem, f)
 
 class Calculate_Size(bpy.types.Operator):
     """计算大小"""
