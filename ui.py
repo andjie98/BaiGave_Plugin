@@ -153,8 +153,15 @@ class ExportPanel(bpy.types.Panel):
     def draw(self,context):
         layout = self.layout
         scene = context.scene
+        settings = layout.box()
+        settings.prop(scene, "schem_filename", text="文件名")
+        settings.prop(scene, "export_format", text="")
+        if scene.export_format in {'legacy', 'both'}:
+            settings.prop(scene, "legacy_schematic_dir", text=".schematic 目录")
+            settings.label(text="留空 = 和 .schem 放一起", icon="INFO")
         row = layout.row()
         row.operator("baigave.export_schem", text="导出结构")
+        layout.operator("baigave.convert_schem_to_schematic", text="转换已有 .schem 为 .schematic")
         box = layout.box()
         box.prop(scene, "save_list",text="选择世界")
         box.label( text="结构位置：("+str(scene.schem_size[0])+"," +str(scene.schem_size[1])+","+ str(scene.schem_size[2])+")")

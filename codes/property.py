@@ -166,6 +166,22 @@ class Property(bpy.types.PropertyGroup):
     _scene_properties["separate_vertices_by_blockid"] = bpy.props.BoolProperty(name="separate_vertices_by_blockid", default=False)
     _scene_properties["separate_vertices_by_chunk"] = bpy.props.BoolProperty(name="separate_vertices_by_blockid", default=False)
     _scene_properties["schem_filename"] = bpy.props.StringProperty(name=".schem文件名", default="file")
+    _scene_properties["export_format"] = bpy.props.EnumProperty(
+        name="导出格式",
+        description="选择导出哪一种结构格式",
+        items=[
+            ("sponge", "高版本 .schem", "Sponge 格式，WorldEdit 7+ / Minecraft 1.13+ 用这个"),
+            ("legacy", "低版本 .schematic", "MCEdit 格式，WorldEdit 6.x / Minecraft 1.12.2 用这个"),
+            ("both", "两个都要", "同时导出 .schem 和 .schematic"),
+        ],
+        default="sponge"
+    )
+    _scene_properties["legacy_schematic_dir"] = bpy.props.StringProperty(
+        name=".schematic输出目录",
+        description="留空 = 和 .schem 放在同一目录；填 WorldEdit 的 schematics 目录可直接进服 //schem load",
+        default="",
+        subtype="DIR_PATH"
+    )
     _scene_properties["download_path"] = bpy.props.StringProperty(
         name="插件路径",
         default="https://github.com/BaiGave/BaiGave_Plugin/releases",

@@ -4,6 +4,9 @@ import os
 from pathlib import Path
 import subprocess
 import threading
+import json
+import zlib
+from types import SimpleNamespace
 import rpyc
 from .pipe_stream import PipeStream
 from rpyc.core.channel import Channel
@@ -63,6 +66,43 @@ amulet = Module("amulet")
 amulet_nbt = Module("amulet_nbt")
 
 
+class RenderBlock:
+    """A translated Java state used only by the visual mesh builders."""
+    def __init__(self, state, extras=()):
+        self.state = state
+        self.extra_blocks = tuple(RenderBlock(value) for value in extras)
+
+    def __str__(self):
+        return self.state
+
+
+def is_block(value):
+    return isinstance(value, RenderBlock) or isinstance(value, amulet.api.block.Block)
+
+
+class RenderRegion:
+    def __init__(self, palette, cells):
+        self.palette = [RenderBlock(*item) for item in palette]
+        self.cells = {(x, y, z): self.palette[index] for x, y, z, index in cells}
+        self.air = RenderBlock("minecraft:air")
+        self.translation_manager = SimpleNamespace(get_version=self.get_version)
+
+    def get_version(self, platform, version):
+        if (platform, tuple(version)) != ("java", (1, 20, 4)):
+            raise ValueError("Render snapshot is translated to Java 1.20.4 only")
+        return SimpleNamespace(block=SimpleNamespace(from_universal=lambda block: (block, None, False)))
+
+    def get_block(self, x, y, z, dimension):
+        if dimension != "main":
+            raise ValueError(dimension)
+        return self.cells.get((x, y, z), self.air)
+
+
+def render_region(level, minimum, maximum):
+    data = connection().root.render_region(level, tuple(minimum), tuple(maximum))
+    return RenderRegion(*json.loads(zlib.decompress(data)))
+
+
 def constructor(module, name):
     def create(*args, **kwargs):
         return connection().root.construct(module, name, args, kwargs)
@@ -84,16 +124,37 @@ def save_nbt(tag, destination):
         Path(destination).write_bytes(data)
 
 
+def save_legacy_schematic(source, destination):
+    """Rewrite a Sponge .schem as the legacy .schematic WorldEdit 6.x reads.
+
+    :return: (path written, names of blocks with no 1.12.2 equivalent)
+    """
+    written, unmapped = connection().root.schem_to_schematic(
+        os.fspath(source), os.fspath(destination))
+    # rpyc hands collections back as proxies; copy before Blender touches them.
+    return str(written), [str(name) for name in unmapped]
+
+
+def make_sponge_schem(width, height, length, palette_names, block_data):
+    """Ask the worker to assemble a Sponge .schem and return the finished bytes.
+
+    Building the NBT tag from here would make every palette write a separate
+    round trip over the pipe; the worker does it in one call instead.
+    """
+    return connection().root.make_sponge_schem(
+        int(width), int(height), int(length),
+        [str(name) for name in palette_names], bytes(block_data))
+
+
 def varint_bytes(values):
     """Sponge BlockData stores VarInts, not one byte per palette index."""
-    result = []
+    result = bytearray()
     for value in values:
         value = int(value)
         if value < 0:
             raise ValueError("Palette indices must be nonnegative")
         while value > 127:
-            byte = (value & 127) | 128
-            result.append(byte - 256)
+            result.append((value & 127) | 128)
             value >>= 7
         result.append(value)
-    return result
+    return bytes(result)

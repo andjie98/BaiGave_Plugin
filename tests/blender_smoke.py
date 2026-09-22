@@ -87,5 +87,23 @@ print('LEGACY_SCHEMATIC_METADATA_GEOMETRY_OK')
 # Multi-select handles both formats through the same operator.
 assert bpy.ops.baigave.import_schem(filepath=str(p), files=[{'name':'integration.schem'}, {'name':p.name}]) == {'FINISHED'}
 print('MIXED_SCHEM_SCHEMATIC_IMPORT_OK')
+# Export side: Sponge .schem -> legacy .schematic for WorldEdit 6.x (numeric 1.12.2 ids).
+sponge = root / 'schem' / 'integration.schem'
+converted = root / 'schem' / 'converted.schematic'
+written, unmapped = b.save_legacy_schematic(str(sponge), str(converted))
+assert str(written) == str(converted) and converted.is_file()
+assert unmapped == [], unmapped
+level = b.amulet.load_level(str(converted))
+assert level.level_wrapper.platform == 'java'
+assert tuple(level.level_wrapper.version) == (1, 12, 2)
+assert str(level.get_version_block(0, 0, 0, 'main', ('java', (1, 12, 2)))[0]).startswith('minecraft:stone')
+assert str(level.get_version_block(1, 0, 0, 'main', ('java', (1, 12, 2)))[0]).startswith('minecraft:glass')
+level.close()
+print('LEGACY_SCHEMATIC_EXPORT_OK')
+# The operator writes into the configured folder instead of beside the source.
+bpy.context.scene.legacy_schematic_dir = str(root / 'schem')
+assert bpy.ops.baigave.convert_schem_to_schematic(filepath=str(sponge), files=[{'name':'integration.schem'}]) == {'FINISHED'}
+assert (root / 'schem' / 'integration.schematic').is_file()
+print('LEGACY_SCHEMATIC_OPERATOR_OK')
 m.unregister();m.register();m.unregister()
 print('EXTENDED_ALL_OK')
