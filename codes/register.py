@@ -65,7 +65,6 @@ def register_blocks(ids):
             obj=block(textures, elements, position, rotation, filename, has_air, collection, uvlock)
             obj["文本数据"] = text_data
             obj["id"] = id
-            id = re.escape(id)
             id_map[id] = next_id
             next_id += 1  # 修改这里，确保每次迭代都递增 next_id
 

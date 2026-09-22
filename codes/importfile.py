@@ -11,7 +11,7 @@ from .schem import schem_chunk,schem_liquid,schem,remove_brackets,separate_verti
 from .functions.mesh_to_mc import create_mesh_from_dictionary,create_or_clear_collection
 from .register import register_blocks
 import json
-from ..backend import amulet
+from ..backend import amulet, render_region
 from ..backend import amulet_nbt
 import threading
 
@@ -179,12 +179,13 @@ class ImportSchem(bpy.types.Operator):
                 image = bpy.data.images.new("colormap", width=size[2], height=size[0])
                 image.use_fake_user = True
                 image.pixels.foreach_set((0.47, 0.75, 0.35, 1.0) * (size[2] * size[0]))
-                obj = schem(level, chunks, False, os.path.basename(path))
+                visual_level = render_region(level, minimum, maximum)
+                obj = schem(visual_level, chunks, False, os.path.basename(path))
                 if context.scene.separate_vertices_by_blockid:
                     separate_vertices_by_blockid(obj)
                 elif context.scene.separate_vertices_by_chunk:
                     separate_vertices_by_chunk(obj)
-                schem_liquid(level, chunks)
+                schem_liquid(visual_level, chunks)
                 for material in bpy.data.materials:
                     if material.node_tree:
                         for node in material.node_tree.nodes:
@@ -434,7 +435,7 @@ class ImportWorld(bpy.types.Operator):
         # 将顶点和顶点索引添加到网格中
         mesh.from_pydata(vertices, [], [])
         for i, item in enumerate(obj.data.attributes['blockid'].data):
-            id =re.escape(ids[i])
+            id =ids[i]
             item.value=id_map[id]
         #群系上色
         for i, item in enumerate(obj.data.attributes['biome'].data):

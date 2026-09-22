@@ -125,10 +125,13 @@ def get_file_path(modid,type):
                 else:
                     continue
         elif directory =="资源包":
-            path = filepath+directory
+            # 注意：基准路径不能复用 path 变量。老写法在循环里 path = path + ...
+            # 会让第二个资源包拼成 <第一个包>\assets\<mod>\<第二个包>\assets\<mod>，
+            # 于是列表里排名第一之后的资源包全部静默失效（优先级形同虚设）。
+            base_path = filepath+directory
             directories_r = config.config["resourcepack_list"]
             for d in directories_r:
-                path =path+"\\"+d+"\\assets\\"+mod
+                path =base_path+"\\"+d+"\\assets\\"+mod
                 if type == 's':
                     temp_path=path + "\\blockstates\\" + id + ".json"
                     if os.path.exists(temp_path):

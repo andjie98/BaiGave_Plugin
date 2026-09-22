@@ -106,7 +106,6 @@ def create_mesh_from_dictionary(d,name):
     id_map=register_blocks(list(set(d.values())))
     for coord, id_str in d.items():
         vertices.append((coord[0],-coord[1],coord[2]))
-        id_str =re.escape(id_str)
         # 将字符串id转换为相应的数字id
         ids.append(id_map[id_str])
     # 将顶点和顶点索引添加到网格中

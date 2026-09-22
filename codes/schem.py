@@ -3,7 +3,7 @@ import math
 import bmesh
 from .model import create_mesh,add_mesh_to_collection,get_or_create_material,set_uv
 import re
-from ..backend import amulet
+from ..backend import amulet, is_block
 from .classification_files.block_type import liquid,exclude
 import numpy as np
 import os
@@ -73,7 +73,7 @@ def schem(level,chunks,cached,filename="schem",position=(0,0,0)):
                         id = level.get_block(x, y, z, "main")
                     except:
                         continue
-                    if isinstance(id,amulet.api.block.Block):
+                    if is_block(id):
                         
                         if id.extra_blocks !=():
                             w=1
@@ -100,7 +100,7 @@ def schem(level,chunks,cached,filename="schem",position=(0,0,0)):
     mesh.from_pydata(vertices, [], [])
     #给予顶点id
     for i, item in enumerate(obj.data.attributes['blockid'].data):
-        id =re.escape(ids[i])
+        id =ids[i]
         item.value=id_map[id]
         #print(item.value)
     #给予水属性
@@ -154,7 +154,7 @@ def schem_chunk(level,chunks,x_list,filename="schem",position=(0,0,0)):
                     # 获取坐标处的方块       
                     blc =level.get_version_block(x, y, z, "main",("java", (1, 20, 4)))
                     id =blc[0]
-                    if isinstance(id,amulet.api.block.Block):
+                    if is_block(id):
                         id = str(id).replace('"', '')
                         result = remove_brackets(id) 
                         if result not in exclude:  
@@ -220,7 +220,7 @@ def schem_liquid(level,chunks, filename="liquid", position=(0, 0, 0)):
                     id = level.get_block(x, y, z, "main")
                 except:
                     continue
-                if isinstance(id,amulet.api.block.Block):
+                if is_block(id):
                     if id.extra_blocks !=():
                         try:
                             id=str(level.translation_manager.get_version("java", (1, 20, 4)).block.from_universal(id.extra_blocks[0])[0]).replace('"', '')
@@ -249,7 +249,7 @@ def schem_liquid(level,chunks, filename="liquid", position=(0, 0, 0)):
                                 name = level.get_block(adj_coord[0], adj_coord[1], adj_coord[2], "main")
                             except:
                                 continue
-                            if isinstance(name,amulet.api.block.Block):
+                            if is_block(name):
                                 if name.extra_blocks !=():
                                     name=str(level.translation_manager.get_version("java", (1, 20, 4)).block.from_universal(name.extra_blocks[0])[0]).replace('"', '')
                                 else:

@@ -57,10 +57,11 @@ def get_ctm_value(modid):
     directories = config.config["mod_list"]
     for directory in directories:
         if directory =="资源包":
-            path = filepath+directory
+            # 同 get_data.get_file_path：基准路径要独立，否则第二个资源包起全失效。
+            base_path = filepath+directory
             directories_r = config.config["resourcepack_list"]
             for d in directories_r:
-                path =path+"\\"+d+"\\assets\\"+mod
+                path =base_path+"\\"+d+"\\assets\\"+mod
                 ctm_path=path + "\\optifine\\ctm\\"
                 if os.path.exists(ctm_path):
                     result =search_ctm_properties(ctm_path,id)
