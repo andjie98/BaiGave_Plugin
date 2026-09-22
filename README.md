@@ -1,5 +1,7 @@
 # Blender 5.2 适配分叉（Windows x64）
 
+本仓库是 [BaiGave/BaiGave_Plugin](https://github.com/BaiGave/BaiGave_Plugin) 的**分叉（fork）**。原项目作者 **BaiGave**（bilibili），以 **AGPL-3.0** 授权（见 [LICENSE](LICENSE)）。分叉由 **andjie98** 维护，主要改动：适配 Blender 5.2.2、新增 legacy `.schematic` 低版本导出与 `.schem` → `.schematic` 转换、修复导出崩溃与导出卡顿、修复方块名转义及资源包加载路径。原版权声明与原作者署名一并保留，修改部分同样以 AGPL-3.0 发布。
+
 此分支适配 Blender 5.2.2，保留 Blender 自带 Python 3.13，并使用插件私有的 Python 3.11 环境运行 Amulet 地图读写库。无需降级 Blender。
 
 安装、构建和已验证范围见 [BLENDER_5_2.md](BLENDER_5_2.md)。请使用构建后的安装包；GitHub 自动生成的源码 ZIP 不包含运行环境。这是实验性适配，大型地图及全部模组组合尚未完整验证。
@@ -50,8 +52,12 @@
   - [导入.schem文件](#导入schem文件)
   - [导入.nbt文件](#导入nbt文件)
   - [导入存档文件](#导入存档文件)
-  - [导入blockstate文件夹内的.json文件](#导入blockstae文件夹内的json文件)
+  - [导入blockstate文件夹内的.json文件](#导入blockstate文件夹内的json文件)
+- [导出地图](#导出地图)
+  - [导出结构](#导出结构)
+  - [导出到 WorldEdit（1.12.2）](#导出到-worldedit1122)
 - [作者](#作者)
+- [版权说明](#版权说明)
 
 ### 插件的基础配置
 
@@ -182,7 +188,36 @@ https://github.com/BaiGave/BaiGave_Plugin/assets/107305554/ddb95008-b957-4d31-a0
 
 ###### 导入blockstate文件夹内的json文件
 
+### 导出地图
 
+###### 导出结构
+
+在「导出」面板里填好文件名，点击「导出结构」。文件写到插件目录下的 `schem/`，
+可以在弹窗里点「点击这里前往导出文件夹」直接打开。
+
+###### 导出到 WorldEdit（1.12.2）
+
+WorldEdit 7（Minecraft 1.13）之后才有 Sponge `.schem` 格式；1.12.2 上的最后一版
+WorldEdit 6.1.9 只认老式的 MCEdit `.schematic`（用数字方块 ID + 数据值），所以
+`.schem` 直接丢进 `plugins/WorldEdit/schematics` 是读不出来的。
+
+「导出」面板的**「导出格式」**下拉里三选一：
+
+| 选项 | 产出 | 给谁用 |
+| --- | --- | --- |
+| 高版本 .schem | 只有 `<名字>.schem` | WorldEdit 7+ / Minecraft 1.13+ |
+| 低版本 .schematic | 只有 `<名字>.schematic` | WorldEdit 6.x / Minecraft 1.12.2 |
+| 两个都要 | 两份都写 | 两边都要 |
+
+选「低版本」或「两个都要」时会多出一个「.schematic 目录」输入框：留空就跟
+`.schem` 放一起，填成 `plugins/WorldEdit/schematics` 就能直接进服
+`//schem load 文件名`。选「低版本」时中间那份 `.schem` 写在临时目录，转换完
+自动删掉，不会在 `schem/` 里留下多余文件。
+
+以前导出的结构，可以用「转换已有 .schem 为 .schematic」按钮补转，支持多选。
+
+1.12.2 里不存在的方块（铜、深板岩，以及 1.16 之后新增的全部方块和未知模组方块）
+会变成空气；转换完弹窗会列出具体是哪些方块丢了。
 
 ### 作者
 
@@ -206,6 +241,8 @@ bilibili个人主页：https://space.bilibili.com/3461563635731405?spm_id_from=3
 ### 版权说明
 
 该项目签署了AGPL-3.0授权许可，详情请参阅 [LICENSE](https://github.com/BaiGave/BaiGave_Plugin/blob/main/LICENSE)
+
+本仓库为其分叉（fork）：原项目版权归原作者 **BaiGave** 及上方「作者」段所列各位贡献者所有；分叉新增与修改部分由 **andjie98** 完成，同样以 AGPL-3.0 发布。分叉版源码：<https://github.com/andjie98/BaiGave_Plugin>。
 
 
 
